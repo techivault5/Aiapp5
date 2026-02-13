@@ -1,6 +1,24 @@
 import { create } from 'zustand';
 import type { ColumnInfo, SchemaInfo, QueryResult } from './snowflake';
 
+export interface FormulaToken {
+  id: string;
+  type: 'field' | 'function' | 'operator' | 'literal' | 'open_paren' | 'close_paren' | 'separator';
+  value: string;
+  displayName: string;
+  category?: string;
+  dataType?: string;
+}
+
+export interface SavedFormula {
+  id: string;
+  name: string;
+  alias: string;
+  tokens: FormulaToken[];
+  sql: string;
+  createdAt: number;
+}
+
 export interface ConnectionConfig {
   account: string;
   username: string;
@@ -94,6 +112,12 @@ interface AppState {
   // Command palette
   showCommandPalette: boolean;
 
+  // Formula Builder
+  showFormulaBuilder: boolean;
+  formulaTokens: FormulaToken[];
+  savedFormulas: SavedFormula[];
+  editingFormulaId: string | null;
+
   // Actions
   setConnectionConfig: (config: ConnectionConfig) => void;
   setConnected: (connected: boolean) => void;
@@ -132,6 +156,16 @@ interface AppState {
   setShowPreview: (show: boolean) => void;
   setIsLoadingPreview: (v: boolean) => void;
   setShowCommandPalette: (show: boolean) => void;
+  setShowFormulaBuilder: (show: boolean) => void;
+  setFormulaTokens: (tokens: FormulaToken[]) => void;
+  addFormulaToken: (token: FormulaToken) => void;
+  removeFormulaToken: (id: string) => void;
+  reorderFormulaTokens: (fromIndex: number, toIndex: number) => void;
+  saveFormula: (formula: SavedFormula) => void;
+  deleteFormula: (id: string) => void;
+  loadFormula: (id: string) => void;
+  clearFormulaTokens: () => void;
+  setEditingFormulaId: (id: string | null) => void;
   reset: () => void;
 }
 
@@ -171,6 +205,10 @@ const initialState = {
   showPreview: false,
   isLoadingPreview: false,
   showCommandPalette: false,
+  showFormulaBuilder: false,
+  formulaTokens: [],
+  savedFormulas: [],
+  editingFormulaId: null,
 };
 
 let logCounter = 0;
@@ -227,5 +265,38 @@ export const useAppStore = create<AppState>((set) => ({
   setShowPreview: (show) => set({ showPreview: show }),
   setIsLoadingPreview: (v) => set({ isLoadingPreview: v }),
   setShowCommandPalette: (show) => set({ showCommandPalette: show }),
+  setShowFormulaBuilder: (show) => set({ showFormulaBuilder: show }),
+  setFormulaTokens: (tokens) => set({ formulaTokens: tokens }),
+  addFormulaToken: (token) =>
+    set((state) => ({ formulaTokens: [...state.formulaTokens, token] })),
+  removeFormulaToken: (id) =>
+    set((state) => ({ formulaTokens: state.formulaTokens.filter((t) => t.id !== id) })),
+  reorderFormulaTokens: (fromIndex, toIndex) =>
+    set((state) => {
+      const tokens = [...state.formulaTokens];
+      const [moved] = tokens.splice(fromIndex, 1);
+      tokens.splice(toIndex, 0, moved);
+      return { formulaTokens: tokens };
+    }),
+  saveFormula: (formula) =>
+    set((state) => {
+      const existing = state.savedFormulas.findIndex((f) => f.id === formula.id);
+      if (existing >= 0) {
+        const updated = [...state.savedFormulas];
+        updated[existing] = formula;
+        return { savedFormulas: updated, editingFormulaId: null };
+      }
+      return { savedFormulas: [...state.savedFormulas, formula], editingFormulaId: null };
+    }),
+  deleteFormula: (id) =>
+    set((state) => ({ savedFormulas: state.savedFormulas.filter((f) => f.id !== id) })),
+  loadFormula: (id) =>
+    set((state) => {
+      const formula = state.savedFormulas.find((f) => f.id === id);
+      if (formula) return { formulaTokens: [...formula.tokens], editingFormulaId: id };
+      return {};
+    }),
+  clearFormulaTokens: () => set({ formulaTokens: [], editingFormulaId: null }),
+  setEditingFormulaId: (id) => set({ editingFormulaId: id }),
   reset: () => set(initialState),
 }));

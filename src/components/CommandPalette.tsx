@@ -33,6 +33,13 @@ export default function CommandPalette() {
       action: () => store.setShowQueryHistory(!store.showQueryHistory),
     },
     {
+      id: 'toggle-formula',
+      label: store.showFormulaBuilder ? 'Hide Formula Builder' : 'Show Formula Builder',
+      shortcut: 'Ctrl+F',
+      category: 'View',
+      action: () => store.setShowFormulaBuilder(!store.showFormulaBuilder),
+    },
+    {
       id: 'toggle-stats',
       label: store.showColumnStats ? 'Hide Column Stats' : 'Show Column Stats',
       shortcut: 'Ctrl+I',

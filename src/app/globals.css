@@ -200,3 +200,54 @@
 .kbd {
   @apply inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-[10px] font-medium bg-white/10 text-gray-400 rounded border border-white/10;
 }
+
+/* ─── Formula Builder ─────────────────────────────────────────────── */
+.formula-canvas {
+  @apply flex-1 min-h-[140px] rounded-xl border-2 border-dashed border-white/10 bg-white/[0.02] p-3 transition-all duration-200 overflow-y-auto;
+}
+
+.formula-canvas-active {
+  @apply border-snow-500/50 bg-snow-500/[0.04] shadow-inner shadow-snow-500/5;
+}
+
+.formula-canvas-empty {
+  @apply flex items-center justify-center;
+}
+
+.formula-token {
+  @apply inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border text-xs font-medium cursor-grab active:cursor-grabbing transition-all duration-150 hover:scale-105 hover:shadow-md select-none;
+}
+
+.formula-token:active {
+  @apply opacity-70 scale-95;
+}
+
+.formula-palette-item {
+  @apply flex items-center justify-between px-2.5 py-1.5 rounded-lg cursor-grab active:cursor-grabbing hover:bg-white/[0.06] transition-all duration-150 select-none;
+}
+
+.formula-palette-item:active {
+  @apply bg-white/[0.08] scale-[0.98];
+}
+
+.formula-op-item {
+  @apply flex items-center justify-center px-2 py-2 rounded-lg cursor-grab active:cursor-grabbing bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.08] hover:border-white/[0.12] text-gray-300 transition-all duration-150 select-none;
+}
+
+.formula-op-item:active {
+  @apply bg-white/[0.10] scale-[0.97];
+}
+
+.formula-saved-item {
+  @apply p-2.5 rounded-lg border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-150;
+}
+
+@keyframes token-pop {
+  0% { transform: scale(0.8); opacity: 0; }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.formula-token {
+  animation: token-pop 0.2s ease-out;
+}
